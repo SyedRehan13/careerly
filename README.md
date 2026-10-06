@@ -2,7 +2,7 @@
 
 Careerly is an AI-assisted career workspace for managing the full job-search journey—from discovering roles and understanding fit to tracking applications, preparing for interviews, and reaching an offer.
 
-This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, a typed API layer, and a FastAPI service with token validation and an initial profile database model. Profile editing, job tracking, and AI features are still pending.
+This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, a typed API layer, and a FastAPI service with profile and saved-job APIs. Connecting those APIs to the frontend, application tracking, and AI features are still pending.
 
 ## Architecture
 
@@ -73,13 +73,27 @@ In Supabase Authentication URL settings, allow `<VITE_PUBLIC_APP_URL>/auth/confi
 
 ## Current routes
 
-Backend profile endpoints require `Authorization: Bearer <Supabase access token>`:
+Backend user and saved-job endpoints require `Authorization: Bearer <Supabase access token>`:
 
 - `GET /api/v1/users/me` returns the verified Supabase identity.
 - `GET /api/v1/users/me/profile` returns the database profile, creating it if needed.
 - `PATCH /api/v1/users/me/profile` updates name, headline, location, and bio. Omitted fields are preserved; explicit `null` clears a field. Unknown fields, including user IDs, are rejected. Name/headline/location allow 200 characters each; bio allows 5,000. Profile edits do not change Supabase Auth metadata.
 
-Run backend checks from `backend` with `.\venv\Scripts\python.exe -m unittest discover -s tests -v`. For Supabase integration checks, set `$env:CAREERLY_TEST_DATABASE = "1"` before running. These tests use existing Auth users, override authentication, and roll back all profile changes. Two existing Auth users are needed to exercise cross-user isolation; these checks do not test real sign-in tokens.
+- `POST /api/v1/saved-jobs` saves a manually entered job (201).
+- `GET /api/v1/saved-jobs?limit=20&offset=0` lists only the caller's jobs, newest first. The response is an array; limit is 1–100 and offset is nonnegative.
+- `GET /api/v1/saved-jobs/{job_id}` reads one owned job.
+- `PATCH /api/v1/saved-jobs/{job_id}` updates supplied fields only.
+- `DELETE /api/v1/saved-jobs/{job_id}` deletes an owned job (204, no response body).
+
+Saved jobs require a nonblank `title` and `company` (up to 200 characters each). Optional `location` allows 200 characters, `job_url` accepts HTTP/HTTPS URLs up to 2,048 characters, and `description` allows 20,000. Explicit null clears optional fields but cannot clear title/company. Caller-supplied IDs and owner IDs are rejected. Missing jobs and jobs owned by other users both return 404. Duplicate jobs are allowed. Each saved job references `auth.users.id`, and deleting an Auth user cascades to their jobs. RLS enforces ownership for browser database access; backend queries enforce ownership independently.
+
+Example create request body:
+
+```json
+{"title": "Backend Developer", "company": "Example", "location": "Remote", "job_url": "https://example.com/jobs/1"}
+```
+
+Run backend checks from `backend` with `.\venv\Scripts\python.exe -m unittest discover -s tests -v`. For Supabase integration checks, set `$env:CAREERLY_TEST_DATABASE = "1"` before running. These tests use existing Auth users, override authentication, and roll back all test changes. Two existing Auth users are needed to exercise cross-user isolation; these checks do not test real sign-in tokens.
 
 - Public: `/`, `/login`, `/signup`, `/auth/confirmed`
 - Protected: `/app`, `/app/jobs`, `/app/applications`, `/app/resume`, `/app/interview`, `/app/profile`

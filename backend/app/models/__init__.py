@@ -2,5 +2,6 @@
 
 from app.models.base import Base
 from app.models.profile import Profile
+from app.models.saved_job import SavedJob
 
-__all__ = ["Base", "Profile"]
+__all__ = ["Base", "Profile", "SavedJob"]
