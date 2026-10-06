@@ -2,7 +2,7 @@
 
 Careerly is an AI-assisted career workspace for managing the full job-search journey—from discovering roles and understanding fit to tracking applications, preparing for interviews, and reaching an offer.
 
-This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, a typed API layer, and a small FastAPI service. Database persistence beyond authentication and AI features are intentionally deferred.
+This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, a typed API layer, and a FastAPI service with token validation and an initial profile database model. Profile editing, job tracking, and AI features are still pending.
 
 ## Architecture
 
@@ -37,6 +37,23 @@ python -m venv venv
 ```
 
 The API runs at `http://127.0.0.1:8000`. Interactive documentation is available at `/docs`.
+
+### Database migrations
+
+Configure `backend/.env` with `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `DATABASE_URL`. Use the Supabase Session Pooler connection on port 5432 and URL-encode special characters in the database password. Credentials stay in `.env`; Alembic reads them through the backend settings.
+
+From `backend`, apply migrations and check their status:
+
+```powershell
+.\venv\Scripts\python.exe -m alembic upgrade head
+.\venv\Scripts\python.exe -m alembic current
+```
+
+The initial migration creates `public.profiles`, linked to `auth.users.id`, with name, headline, location, bio, and timestamps. Deleting an Auth user cascades to their profile. Row-level security restricts browser access to the profile owner. Profile records will be created by the profile API in the next backend step; signup currently creates only the Supabase identity.
+
+To prepare future schema changes, edit the models, run `python -m alembic revision --autogenerate -m "describe change"` using the backend virtual environment, and review the generated migration before applying it. Autogeneration excludes Supabase-managed and unrelated tables. Policies and other SQL objects require explicit migrations. `updated_at` is maintained on SQLAlchemy updates; direct SQL writes must update it explicitly.
+
+The backend database connection uses privileged credentials. Future profile endpoints must filter by the authenticated user ID even though browser access is protected by RLS. Never accept a caller-provided user ID as authorization.
 
 ## Environment configuration
 
