@@ -1,6 +1,7 @@
-import { Briefcase, ClipboardList, FileText, LayoutDashboard, MessagesSquare, UserRound, X } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { Briefcase, ClipboardList, FileText, LayoutDashboard, LogOut, MessagesSquare, UserRound, X } from 'lucide-react'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { Brand } from '../common/Brand'
+import { useAuth } from '../../hooks/useAuth'
 
 const navigation = [
   { label: 'Dashboard', to: '/app', icon: LayoutDashboard, end: true },
@@ -14,6 +15,16 @@ const navigation = [
 interface SidebarProps { open: boolean; onClose: () => void }
 
 export function Sidebar({ open, onClose }: SidebarProps) {
+  const { signOut, user } = useAuth()
+  const navigate = useNavigate()
+  const fullName = typeof user?.user_metadata.full_name === 'string' ? user.user_metadata.full_name : 'Careerly member'
+
+  async function handleSignOut() {
+    await signOut()
+    onClose()
+    navigate('/login', { replace: true })
+  }
+
   return (
     <>
       {open && <button className="fixed inset-0 z-40 bg-slate-950/30 backdrop-blur-[1px] lg:hidden" onClick={onClose} aria-label="Close navigation" type="button" />}
@@ -29,11 +40,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             </NavLink>
           ))}
         </nav>
-        <div className="rounded-2xl bg-slate-950 p-4 text-white">
-          <p className="text-xs font-semibold text-indigo-300">NEXT MILESTONE</p>
-          <p className="mt-2 text-sm font-semibold">Complete your profile</p>
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15"><div className="h-full w-2/5 rounded-full bg-indigo-400" /></div>
-          <p className="mt-2 text-xs text-slate-400">2 of 5 steps complete</p>
+        <div className="border-t border-slate-100 pt-4">
+          <div className="px-3 pb-3"><p className="truncate text-sm font-bold text-slate-900">{fullName}</p><p className="mt-0.5 truncate text-xs text-slate-500">{user?.email}</p></div>
+          <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-rose-50 hover:text-rose-700" onClick={() => void handleSignOut()} type="button"><LogOut size={18} />Log out</button>
         </div>
       </aside>
     </>

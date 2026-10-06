@@ -11,22 +11,28 @@ import { LoginPage } from './pages/LoginPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { ResumePage } from './pages/ResumePage'
 import { SignupPage } from './pages/SignupPage'
+import { GuestRoute } from './routes/GuestRoute'
+import { ProtectedRoute } from './routes/ProtectedRoute'
 
 export default function App() {
   return (
     <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<LandingPage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="signup" element={<SignupPage />} />
+        <Route element={<GuestRoute />}>
+          <Route path="login" element={<LoginPage />} />
+          <Route path="signup" element={<SignupPage />} />
+        </Route>
       </Route>
-      <Route path="app" element={<AppLayout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="jobs" element={<JobsPage />} />
-        <Route path="applications" element={<ApplicationsPage />} />
-        <Route path="resume" element={<ResumePage />} />
-        <Route path="interview" element={<InterviewPage />} />
-        <Route path="profile" element={<ProfilePage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="app" element={<AppLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="jobs" element={<JobsPage />} />
+          <Route path="applications" element={<ApplicationsPage />} />
+          <Route path="resume" element={<ResumePage />} />
+          <Route path="interview" element={<InterviewPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+        </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

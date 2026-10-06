@@ -2,13 +2,18 @@ import { ArrowUpRight, CalendarDays, ChevronRight, CircleCheckBig, Sparkles } fr
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/common/PageHeader'
 import { recentApplications, summaryMetrics, upcomingInterviews } from '../data/dashboard'
+import { useAuth } from '../hooks/useAuth'
 
 const toneStyles = { indigo: 'bg-indigo-50 text-indigo-700', violet: 'bg-violet-50 text-violet-700', amber: 'bg-amber-50 text-amber-700', emerald: 'bg-emerald-50 text-emerald-700' } as const
 
 export function DashboardPage() {
+  const { user } = useAuth()
+  const fullName = typeof user?.user_metadata.full_name === 'string' ? user.user_metadata.full_name : ''
+  const firstName = fullName.split(/\s+/)[0] || 'there'
+
   return (
     <div className="space-y-7">
-      <PageHeader eyebrow="Tuesday, October 6" title="Good morning, Rehan" description="Here’s what’s happening across your job search. You have two priority actions today." action={<Link className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-700" to="/app/jobs">Explore jobs <ArrowUpRight size={16} /></Link>} />
+      <PageHeader eyebrow="Your workspace" title={`Welcome, ${firstName}`} description="Here’s what’s happening across your job search. You have two priority actions today." action={<Link className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-700" to="/app/jobs">Explore jobs <ArrowUpRight size={16} /></Link>} />
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Job search summary">
         {summaryMetrics.map((metric) => <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/40" key={metric.label}><div className="flex items-start justify-between"><p className="text-sm font-medium text-slate-500">{metric.label}</p><span className={`size-2 rounded-full ${toneStyles[metric.tone].split(' ')[0]}`} /></div><p className="mt-4 text-3xl font-bold tracking-tight text-slate-950">{metric.value}</p><p className={`mt-2 inline-flex rounded-full px-2 py-1 text-xs font-semibold ${toneStyles[metric.tone]}`}>{metric.change}</p></article>)}
       </section>
