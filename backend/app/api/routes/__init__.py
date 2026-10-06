@@ -1,0 +1,2 @@
+"""Careerly API routes."""
+
