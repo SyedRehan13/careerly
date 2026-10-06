@@ -21,8 +21,8 @@ The frontend uses React Router for public and application routes, TanStack Query
 ```powershell
 cd frontend
 Copy-Item .env.example .env.local  # optional; the local API URL is also the default
-npm install
-npm run dev
+npm.cmd install
+npm.cmd run dev
 ```
 
 The frontend runs at `http://localhost:5173` by default.
@@ -32,9 +32,8 @@ The frontend runs at `http://localhost:5173` by default.
 ```powershell
 cd backend
 python -m venv venv
-.\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+.\venv\Scripts\python.exe -m pip install -r requirements.txt
+.\venv\Scripts\uvicorn.exe app.main:app --reload
 ```
 
 The API runs at `http://127.0.0.1:8000`. Interactive documentation is available at `/docs`.
@@ -47,4 +46,3 @@ Copy the relevant `.env.example` file when local overrides are needed. Real envi
 
 - Public: `/`, `/login`, `/signup`
 - Application: `/app`, `/app/jobs`, `/app/applications`, `/app/resume`, `/app/interview`, `/app/profile`
-
