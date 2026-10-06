@@ -2,7 +2,7 @@
 
 Careerly is an AI-assisted career workspace for managing the full job-search journey—from discovering roles and understanding fit to tracking applications, preparing for interviews, and reaching an offer.
 
-This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, a typed API layer, and a FastAPI service with profile and saved-job APIs. Connecting those APIs to the frontend, application tracking, and AI features are still pending.
+This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, a typed API layer, and a FastAPI service with profile, saved-job, and application-tracking APIs. Connecting those APIs to the frontend and AI features are still pending.
 
 ## Architecture
 
@@ -73,7 +73,7 @@ In Supabase Authentication URL settings, allow `<VITE_PUBLIC_APP_URL>/auth/confi
 
 ## Current routes
 
-Backend user and saved-job endpoints require `Authorization: Bearer <Supabase access token>`:
+Backend user, saved-job, and application endpoints require `Authorization: Bearer <Supabase access token>`:
 
 - `GET /api/v1/users/me` returns the verified Supabase identity.
 - `GET /api/v1/users/me/profile` returns the database profile, creating it if needed.
@@ -94,6 +94,10 @@ Example create request body:
 ```
 
 Run backend checks from `backend` with `.\venv\Scripts\python.exe -m unittest discover -s tests -v`. For Supabase integration checks, set `$env:CAREERLY_TEST_DATABASE = "1"` before running. These tests use existing Auth users, override authentication, and roll back all test changes. Two existing Auth users are needed to exercise cross-user isolation; these checks do not test real sign-in tokens.
+
+Application tracking uses `POST` and `GET /api/v1/applications`, and `GET`, `PATCH`, and `DELETE /api/v1/applications/{application_id}`. Lists accept `limit` (1–100), `offset`, and an optional `status` filter, and return an array ordered newest first. Each operation enforces ownership; another user's application returns 404.
+
+Applications are entered manually and require `title` and `company`. Optional fields are `location`, `job_url`, `applied_date`, `follow_up_date`, and `notes` (20,000 characters). Dates use `YYYY-MM-DD`. Status defaults to `applied`; supported values are `applied`, `interviewing`, `offer`, `rejected`, and `withdrawn`, enforced by both the API and a database constraint. Partial updates preserve omitted fields; explicit null clears optional fields. Title, company, and status cannot be null. Current status can be corrected freely; status history, reminders, and automatic conversion from saved jobs are not implemented yet.
 
 - Public: `/`, `/login`, `/signup`, `/auth/confirmed`
 - Protected: `/app`, `/app/jobs`, `/app/applications`, `/app/resume`, `/app/interview`, `/app/profile`
