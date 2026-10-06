@@ -49,11 +49,11 @@ From `backend`, apply migrations and check their status:
 .\venv\Scripts\python.exe -m alembic current
 ```
 
-The initial migration creates `public.profiles`, linked to `auth.users.id`, with name, headline, location, bio, and timestamps. Deleting an Auth user cascades to their profile. Row-level security restricts browser access to the profile owner. Profile records will be created by the profile API in the next backend step; signup currently creates only the Supabase identity.
+The initial migration creates `public.profiles`, linked to `auth.users.id`, with name, headline, location, bio, and timestamps. Deleting an Auth user cascades to their profile. Row-level security restricts browser access to the profile owner. The profile API creates a missing profile on first access; signup creates the Supabase identity.
 
 To prepare future schema changes, edit the models, run `python -m alembic revision --autogenerate -m "describe change"` using the backend virtual environment, and review the generated migration before applying it. Autogeneration excludes Supabase-managed and unrelated tables. Policies and other SQL objects require explicit migrations. `updated_at` is maintained on SQLAlchemy updates; direct SQL writes must update it explicitly.
 
-The backend database connection uses privileged credentials. Future profile endpoints must filter by the authenticated user ID even though browser access is protected by RLS. Never accept a caller-provided user ID as authorization.
+The backend database connection uses privileged credentials. Profile endpoints filter by the authenticated user ID even though browser access is protected by RLS. Future endpoints must enforce the same ownership checks. Never accept a caller-provided user ID as authorization.
 
 ## Environment configuration
 
@@ -72,6 +72,14 @@ Find both values in the Supabase project **Connect** dialog. Use the publishable
 In Supabase Authentication URL settings, allow `<VITE_PUBLIC_APP_URL>/auth/confirmed`. For cross-device testing on the same Wi-Fi, run Vite with `npm.cmd run dev -- --host 0.0.0.0`, set `VITE_PUBLIC_APP_URL` to the computer's LAN address (for example, `http://192.168.1.11:5173`), and allow the matching `/auth/confirmed` URL in Supabase.
 
 ## Current routes
+
+Backend profile endpoints require `Authorization: Bearer <Supabase access token>`:
+
+- `GET /api/v1/users/me` returns the verified Supabase identity.
+- `GET /api/v1/users/me/profile` returns the database profile, creating it if needed.
+- `PATCH /api/v1/users/me/profile` updates name, headline, location, and bio. Omitted fields are preserved; explicit `null` clears a field. Unknown fields, including user IDs, are rejected. Name/headline/location allow 200 characters each; bio allows 5,000. Profile edits do not change Supabase Auth metadata.
+
+Run backend checks from `backend` with `.\venv\Scripts\python.exe -m unittest discover -s tests -v`. For Supabase integration checks, set `$env:CAREERLY_TEST_DATABASE = "1"` before running. These tests use existing Auth users, override authentication, and roll back all profile changes. Two existing Auth users are needed to exercise cross-user isolation; these checks do not test real sign-in tokens.
 
 - Public: `/`, `/login`, `/signup`, `/auth/confirmed`
 - Protected: `/app`, `/app/jobs`, `/app/applications`, `/app/resume`, `/app/interview`, `/app/profile`
