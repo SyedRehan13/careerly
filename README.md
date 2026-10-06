@@ -45,13 +45,16 @@ Copy the relevant `.env.example` file when local overrides are needed. Real envi
 Authentication requires these values in `frontend/.env.local`:
 
 ```dotenv
+VITE_PUBLIC_APP_URL=http://localhost:5173
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ```
 
-Find both values in the Supabase project **Connect** dialog. Use the publishable key (or legacy anon key), never a service-role or secret key in frontend code. In Supabase Authentication URL settings, add `http://localhost:5173/app` as an allowed redirect URL for local email confirmation.
+Find both values in the Supabase project **Connect** dialog. Use the publishable key (or legacy anon key), never a service-role or secret key in frontend code. `VITE_PUBLIC_APP_URL` optionally selects a browser-reachable email confirmation destination; it defaults to the current browser origin.
+
+In Supabase Authentication URL settings, allow `<VITE_PUBLIC_APP_URL>/auth/confirmed`. For cross-device testing on the same Wi-Fi, run Vite with `npm.cmd run dev -- --host 0.0.0.0`, set `VITE_PUBLIC_APP_URL` to the computer's LAN address (for example, `http://192.168.1.11:5173`), and allow the matching `/auth/confirmed` URL in Supabase.
 
 ## Current routes
 
-- Public: `/`, `/login`, `/signup`
+- Public: `/`, `/login`, `/signup`, `/auth/confirmed`
 - Protected: `/app`, `/app/jobs`, `/app/applications`, `/app/resume`, `/app/interview`, `/app/profile`

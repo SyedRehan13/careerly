@@ -47,7 +47,7 @@ export function AuthPage({ mode }: AuthPageProps) {
       } else {
         const result = await signUp({ fullName, email, password })
         if (result.emailConfirmationRequired) {
-          setSuccessMessage('Check your email to confirm your account, then return here to log in.')
+          setSuccessMessage('Check your email on any device. After confirming, return to this laptop and log in.')
         } else {
           navigate('/app', { replace: true })
         }
@@ -106,4 +106,3 @@ export function AuthPage({ mode }: AuthPageProps) {
     </main>
   )
 }
-

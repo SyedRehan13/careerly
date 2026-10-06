@@ -4,6 +4,7 @@ import { AppLayout } from './layouts/AppLayout'
 import { PublicLayout } from './layouts/PublicLayout'
 import { ApplicationsPage } from './pages/ApplicationsPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { EmailConfirmedPage } from './pages/EmailConfirmedPage'
 import { InterviewPage } from './pages/InterviewPage'
 import { JobsPage } from './pages/JobsPage'
 import { LandingPage } from './pages/LandingPage'
@@ -19,6 +20,7 @@ export default function App() {
     <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<LandingPage />} />
+        <Route path="auth/confirmed" element={<EmailConfirmedPage />} />
         <Route element={<GuestRoute />}>
           <Route path="login" element={<LoginPage />} />
           <Route path="signup" element={<SignupPage />} />

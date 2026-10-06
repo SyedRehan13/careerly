@@ -18,6 +18,13 @@ function requireSupabase() {
   return supabase
 }
 
+function getEmailConfirmationUrl() {
+  const configuredAppUrl = import.meta.env.VITE_PUBLIC_APP_URL?.trim()
+  const appUrl = configuredAppUrl || window.location.origin
+
+  return `${appUrl.replace(/\/$/, '')}/auth/confirmed`
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(isSupabaseConfigured)
@@ -64,7 +71,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         password,
         options: {
           data: { full_name: fullName },
-          emailRedirectTo: `${window.location.origin}/app`,
+          emailRedirectTo: getEmailConfirmationUrl(),
         },
       })
 
