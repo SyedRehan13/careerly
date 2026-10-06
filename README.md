@@ -99,5 +99,9 @@ Application tracking uses `POST` and `GET /api/v1/applications`, and `GET`, `PAT
 
 Applications are entered manually and require `title` and `company`. Optional fields are `location`, `job_url`, `applied_date`, `follow_up_date`, and `notes` (20,000 characters). Dates use `YYYY-MM-DD`. Status defaults to `applied`; supported values are `applied`, `interviewing`, `offer`, `rejected`, and `withdrawn`, enforced by both the API and a database constraint. Partial updates preserve omitted fields; explicit null clears optional fields. Title, company, and status cannot be null. Current status can be corrected freely; status history, reminders, and automatic conversion from saved jobs are not implemented yet.
 
+`GET /api/v1/dashboard/summary` requires the same bearer authentication and returns only the caller's data: `saved_jobs_count`, `total_applications`, `active_applications`, all five `applications_by_status` counts, `recent_applications`, `upcoming_follow_ups`, and `as_of_date`. Active applications are applied/interviewing/offer. Recent entries sort by creation time, newest first; follow-ups sort by date, soonest first, and include today and later dates only for active applications. Both lists use a deterministic ID tie-breaker. Users without data receive zero counts and empty arrays.
+
+Optional query parameters are `recent_limit` and `follow_up_limit` (each defaults to 5, range 1–20), and `as_of_date=YYYY-MM-DD` (defaults to UTC today). The frontend can supply the user's local date. The summary reads existing tables and does not create data. Counts cover all records, independent of list limits. Interview schedules, response rates, and reminders are not included because their underlying data is not tracked yet.
+
 - Public: `/`, `/login`, `/signup`, `/auth/confirmed`
 - Protected: `/app`, `/app/jobs`, `/app/applications`, `/app/resume`, `/app/interview`, `/app/profile`
