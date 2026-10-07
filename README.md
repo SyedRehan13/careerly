@@ -2,7 +2,7 @@
 
 Careerly is an AI-assisted career workspace for managing the full job-search journey—from discovering roles and understanding fit to tracking applications, preparing for interviews, and reaching an offer.
 
-This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, a typed API layer, and a FastAPI service with profile, saved-job, and application-tracking APIs. Connecting those APIs to the frontend and AI features are still pending.
+This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, profile, saved-job, application, and dashboard pages connected to FastAPI, and backend profile, saved-job, application-tracking, and dashboard APIs. AI features are still pending.
 
 ## Architecture
 
@@ -26,6 +26,24 @@ npm.cmd run dev
 ```
 
 The frontend runs at `http://localhost:5173` by default.
+
+The profile page at `/app/profile` loads career details from the backend and saves name, headline, location, and bio. Run both frontend and backend for this page to work, and point `VITE_API_BASE_URL` at your API if it is not `http://127.0.0.1:8000`. Requests send the current Supabase bearer token; the backend validates it. Profile query caches are keyed by user ID and discarded when the page unmounts. A session change prevents a form from saving to another user's account.
+
+To verify profile integration, log in, open `/app/profile`, edit a field, save, and reload to confirm it persists. Clear a field and save to check that it stays empty. Stop the backend to check the loading error and retry action. Log out and switch accounts to confirm each account sees its own details. Profile edits currently update the career profile only; account email and Supabase Auth metadata remain separate.
+
+The saved-jobs page at `/app/jobs` loads real saved jobs with 20 entries per page. Use **Save a job** to enter a title and company, plus optional location, HTTP/HTTPS job link, and description. Jobs can be edited or deleted with confirmation. Blank optional fields are saved as null. Lists refresh after successful saves and deletions; requests validate the current session and caches are scoped by user ID. Loading, empty, retry, validation, and save/delete error states are included. Jobs are entered manually; automated discovery is not implemented.
+
+To verify saved jobs with both servers running, save a job, reload, edit its details, and reload again. Cancel a deletion first, then confirm it and check that the job disappears. Stop the backend to check error/retry behavior and retained form input. Switch accounts to confirm isolation.
+
+The dashboard loads the authenticated user's real summary: active applications, interviewing applications, saved jobs, offers, all five status counts, five recent applications, and up to five upcoming follow-ups. It uses the browser's local calendar date, checked every minute and on focus. Saved-job and application changes invalidate that user's dashboard cache. No sample records, fabricated trends, or scheduled interviews are shown.
+
+To verify the dashboard with both servers running, check zero counts and empty lists on a new account. Save a job and add an application with an upcoming follow-up date, then return to the dashboard and check the counts and lists. Change the application status and verify its count moves. Stop the backend and refresh to check the error state (previously loaded data is explicitly marked). Switch accounts to confirm each sees only its own summary.
+
+The applications page at `/app/applications` supports manual application entry, editing, deletion with confirmation, all five status filters, and 20 entries per page. Applied and follow-up dates stay calendar dates; blank dates and optional fields are saved as null. Successful changes refresh the user's application queries and invalidate their dashboard queries. Changes that move an application out of the current status filter switch to its new status so the result remains accessible.
+
+To verify applications, add a role with dates and notes, refresh, edit its status to Interviewing, and filter by that status. Clear a date and save to confirm it stays empty. Cancel and then confirm deletion. Stop the backend to verify that failed saves retain input, and switch accounts to verify isolation. Follow-up dates are stored for tracking; automatic notifications are not implemented.
+
+Frontend checks: `npm.cmd run build`, `npm.cmd run lint`, and `node --experimental-strip-types --test tests/career-inputs.test.mjs` (Node 22.6+). The checks cover safe outbound links, supported application statuses, and calendar dates across time zones; browser workflow verification still requires both servers and a signed-in account.
 
 ### Backend
 
