@@ -6,17 +6,8 @@ import { PageHeader } from '../common/PageHeader'
 import { getApiErrorMessage } from '../../services/api'
 import { deleteSavedJob, getSavedJobs, SAVED_JOBS_PAGE_SIZE, savedJobsQueryKey } from '../../services/saved-jobs'
 import type { SavedJob } from '../../types/saved-job'
+import { safeJobUrl } from '../../utils/job-url'
 import { SavedJobForm } from './SavedJobForm'
-
-function safeJobUrl(value: string | null): string | null {
-  if (!value) return null
-  try {
-    const url = new URL(value)
-    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : null
-  } catch {
-    return null
-  }
-}
 
 export function SavedJobsWorkspace({ userId }: { userId: string }) {
   const [page, setPage] = useState(0)

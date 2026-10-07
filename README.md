@@ -2,7 +2,7 @@
 
 Careerly is an AI-assisted career workspace for managing the full job-search journey—from discovering roles and understanding fit to tracking applications, preparing for interviews, and reaching an offer.
 
-This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, profile and saved-job pages connected to FastAPI, and backend profile, saved-job, application-tracking, and dashboard APIs. Connecting applications and dashboard pages to those APIs and AI features are still pending.
+This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, profile, saved-job, and application pages connected to FastAPI, and backend profile, saved-job, application-tracking, and dashboard APIs. Connecting the dashboard to real data and AI features are still pending.
 
 ## Architecture
 
@@ -33,7 +33,13 @@ To verify profile integration, log in, open `/app/profile`, edit a field, save, 
 
 The saved-jobs page at `/app/jobs` loads real saved jobs with 20 entries per page. Use **Save a job** to enter a title and company, plus optional location, HTTP/HTTPS job link, and description. Jobs can be edited or deleted with confirmation. Blank optional fields are saved as null. Lists refresh after successful saves and deletions; requests validate the current session and caches are scoped by user ID. Loading, empty, retry, validation, and save/delete error states are included. Jobs are entered manually; automated discovery is not implemented.
 
-To verify saved jobs with both servers running, save a job, reload, edit its details, and reload again. Cancel a deletion first, then confirm it and check that the job disappears. Stop the backend to check error/retry behavior and retained form input. Switch accounts to confirm isolation. The applications page remains a placeholder and the dashboard still uses mock data until their integration steps are complete.
+To verify saved jobs with both servers running, save a job, reload, edit its details, and reload again. Cancel a deletion first, then confirm it and check that the job disappears. Stop the backend to check error/retry behavior and retained form input. Switch accounts to confirm isolation. The dashboard still uses mock data until its integration step is complete.
+
+The applications page at `/app/applications` supports manual application entry, editing, deletion with confirmation, all five status filters, and 20 entries per page. Applied and follow-up dates stay calendar dates; blank dates and optional fields are saved as null. Successful changes refresh the user's application queries and invalidate their dashboard queries. Changes that move an application out of the current status filter switch to its new status so the result remains accessible.
+
+To verify applications, add a role with dates and notes, refresh, edit its status to Interviewing, and filter by that status. Clear a date and save to confirm it stays empty. Cancel and then confirm deletion. Stop the backend to verify that failed saves retain input, and switch accounts to verify isolation. Follow-up dates are stored for tracking; automatic notifications are not implemented.
+
+Frontend checks: `npm.cmd run build`, `npm.cmd run lint`, and `node --experimental-strip-types --test tests/career-inputs.test.mjs` (Node 22.6+). The input checks cover safe outbound links and supported application statuses; browser workflow verification still requires both servers and a signed-in account.
 
 ### Backend
 
