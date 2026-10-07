@@ -2,7 +2,7 @@
 
 Careerly is an AI-assisted career workspace for managing the full job-search journey—from discovering roles and understanding fit to tracking applications, preparing for interviews, and reaching an offer.
 
-This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, a typed API layer, and a FastAPI service with profile, saved-job, and application-tracking APIs. Connecting those APIs to the frontend and AI features are still pending.
+This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, an editable profile page connected to FastAPI, and backend profile, saved-job, application-tracking, and dashboard APIs. Connecting jobs, applications, and dashboard pages to those APIs and AI features are still pending.
 
 ## Architecture
 
@@ -26,6 +26,10 @@ npm.cmd run dev
 ```
 
 The frontend runs at `http://localhost:5173` by default.
+
+The profile page at `/app/profile` loads career details from the backend and saves name, headline, location, and bio. Run both frontend and backend for this page to work, and point `VITE_API_BASE_URL` at your API if it is not `http://127.0.0.1:8000`. Requests send the current Supabase bearer token; the backend validates it. Profile query caches are keyed by user ID and discarded when the page unmounts. A session change prevents a form from saving to another user's account.
+
+To verify profile integration, log in, open `/app/profile`, edit a field, save, and reload to confirm it persists. Clear a field and save to check that it stays empty. Stop the backend to check the loading error and retry action. Log out and switch accounts to confirm each account sees its own details. Profile edits currently update the career profile only; account email and Supabase Auth metadata remain separate.
 
 ### Backend
 
