@@ -22,7 +22,7 @@ export function getApiErrorMessage(error: unknown): string {
   if (axios.isAxiosError<{ detail?: unknown }>(error)) {
     if (error.response?.status === 401) return 'Your session has expired. Please sign in again.'
     if (!error.response) return 'Unable to reach the server. Please try again shortly.'
-    if (error.response.status === 422) return 'Please check your profile details and try again.'
+    if (error.response.status === 422) return 'Please check the details you entered and try again.'
     if (error.response.status >= 500) return 'The server could not complete your request. Please try again.'
     if (typeof error.response.data?.detail === 'string') return error.response.data.detail
   }

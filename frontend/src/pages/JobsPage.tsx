@@ -1,7 +1,8 @@
-import { Search } from 'lucide-react'
-import { FeaturePlaceholder } from '../components/common/FeaturePlaceholder'
+import { SavedJobsWorkspace } from '../components/jobs/SavedJobsWorkspace'
+import { useAuth } from '../hooks/useAuth'
 
 export function JobsPage() {
-  return <FeaturePlaceholder icon={Search} eyebrow="Discover" title="Find your next opportunity" description="Explore roles and keep promising opportunities within reach." panelTitle="A focused job discovery space" panelDescription="Search, filter, and save relevant roles here. Job matching and recommendations will be connected in a later phase." actionLabel="Set job preferences" />
+  const { user } = useAuth()
+  return user ? <SavedJobsWorkspace key={user.id} userId={user.id} /> : null
 }
 
