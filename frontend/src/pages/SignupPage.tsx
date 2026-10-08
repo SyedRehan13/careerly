@@ -1,3 +1,4 @@
 import { AuthPage } from './AuthPage'
-export function SignupPage() { return <AuthPage mode="signup" /> }
-
+export function SignupPage() {
+  return <AuthPage mode="signup" />
+}

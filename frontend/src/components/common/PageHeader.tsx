@@ -1,22 +1,24 @@
 import type { ReactNode } from 'react'
 
-interface PageHeaderProps {
+export function PageHeader({
+  eyebrow,
+  title,
+  description,
+  action,
+}: {
   eyebrow?: string
   title: string
   description: string
   action?: ReactNode
-}
-
-export function PageHeader({ eyebrow, title, description, action }: PageHeaderProps) {
+}) {
   return (
-    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+    <div className="page-header">
       <div>
-        {eyebrow && <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-indigo-600">{eyebrow}</p>}
-        <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">{title}</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{description}</p>
+        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+        <h1>{title}</h1>
+        <p>{description}</p>
       </div>
-      {action}
+      {action && <div className="page-actions">{action}</div>}
     </div>
   )
 }
-

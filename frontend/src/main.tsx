@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 
 import App from './App'
+import { PageErrorBoundary } from './components/common/PageErrorBoundary'
 import { AuthProvider } from './context/AuthProvider'
 import './index.css'
 
@@ -18,10 +19,11 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
-          <App />
+          <PageErrorBoundary>
+            <App />
+          </PageErrorBoundary>
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,
 )
-

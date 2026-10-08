@@ -8,8 +8,11 @@ export function ProtectedRoute() {
 
   if (isLoading) {
     return (
-      <div className="grid min-h-screen place-items-center bg-slate-50 text-slate-500">
-        <div className="flex items-center gap-3 text-sm font-semibold"><LoaderCircle className="animate-spin" size={20} />Loading your workspace…</div>
+      <div className="grid min-h-screen place-items-center bg-[var(--canvas)]">
+        <div className="flex items-center gap-3 text-sm muted" role="status">
+          <LoaderCircle className="animate-spin text-brand-600" size={20} />
+          Opening your workspace…
+        </div>
       </div>
     )
   }
@@ -20,4 +23,3 @@ export function ProtectedRoute() {
 
   return <Outlet />
 }
-

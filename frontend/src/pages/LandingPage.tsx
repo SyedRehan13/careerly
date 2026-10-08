@@ -1,71 +1,126 @@
-import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import {
+  ArrowRight, ArrowUpRight, Bookmark, CalendarDays, Check,
+  ClipboardList, LayoutDashboard, MessagesSquare, Target,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Brand } from '../components/common/Brand'
 
-const benefits = ['Discover the right opportunities', 'Understand your fit before applying', 'Keep every application organized', 'Tailor resumes for each role', 'Prepare with purpose', 'Turn progress into offers']
+const features = [
+  {
+    icon: Bookmark,
+    title: 'A shortlist worth coming back to.',
+    description: 'Save interesting roles from any job board. Keep links, company details, and notes together until you’re ready to apply.',
+    label: 'Save opportunities',
+  },
+  {
+    icon: ClipboardList,
+    title: 'Every application. One clear view.',
+    description: 'Follow your applications from the first click to the final offer. See what’s moving and what needs your attention.',
+    label: 'Track your progress',
+  },
+  {
+    icon: CalendarDays,
+    title: 'Always know what comes next.',
+    description: 'Set follow-up dates and keep your conversation notes close. Make your next move with the details in front of you.',
+    label: 'Plan your next step',
+  },
+]
 
-export function LandingPage() {
+function WorkspacePreview() {
   return (
-    <div className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[680px] bg-[radial-gradient(circle_at_70%_20%,rgba(199,210,254,0.55),transparent_35%),radial-gradient(circle_at_20%_10%,rgba(224,231,255,0.65),transparent_32%)]" />
-      <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
-        <Brand />
-        <nav className="flex items-center gap-2 sm:gap-4" aria-label="Public navigation">
-          <Link className="rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 hover:text-slate-950" to="/login">Log in</Link>
-          <Link className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800" to="/signup">Get started</Link>
-        </nav>
-      </header>
-
-      <main>
-        <section className="mx-auto grid max-w-7xl items-center gap-14 px-5 pb-20 pt-20 sm:px-8 lg:grid-cols-[1.08fr_0.92fr] lg:pb-28 lg:pt-28">
-          <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/70 px-3 py-1.5 text-xs font-bold text-indigo-700 shadow-sm backdrop-blur">
-              <span className="size-1.5 rounded-full bg-indigo-500" /> Your career search, finally in one place
-            </div>
-            <h1 className="max-w-3xl text-5xl font-bold leading-[1.04] tracking-[-0.045em] text-slate-950 sm:text-6xl lg:text-7xl">
-              An intelligent workspace for your entire job search.
-            </h1>
-            <p className="mt-7 max-w-xl text-lg leading-8 text-slate-600">
-              Careerly brings opportunities, applications, resumes, and interview preparation into one focused workflow—so every step moves you closer to an offer.
-            </p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Link className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition hover:-translate-y-0.5 hover:bg-indigo-700" to="/signup">Get Started <ArrowRight size={17} /></Link>
-              <Link className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 shadow-sm hover:border-slate-400" to="/app">View Dashboard</Link>
-            </div>
+    <div className="hero-art" aria-label="An illustrative preview of a Careerly workspace">
+      <div className="preview-window">
+        <div className="preview-topbar">
+          <div className="preview-dots" aria-hidden="true"><i /><i /><i /></div>
+          <span>Careerly workspace</span>
+          <span className="preview-label">Preview</span>
+        </div>
+        <div className="preview-body">
+          <div className="preview-rail" aria-hidden="true">
+            <span className="preview-rail-active"><LayoutDashboard size={18} /></span>
+            <span><ClipboardList size={18} /></span>
+            <span><Bookmark size={18} /></span>
+            <span><MessagesSquare size={18} /></span>
           </div>
-
-          <div className="relative mx-auto w-full max-w-xl">
-            <div className="absolute -inset-6 -z-10 rounded-[2.5rem] bg-indigo-100/50 blur-2xl" />
-            <div className="rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-2xl shadow-slate-300/50 backdrop-blur sm:p-7">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-5">
-                <div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">This week</p><p className="mt-1 text-xl font-bold text-slate-950">Your job search</p></div>
-                <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">On track</span>
-              </div>
-              <div className="grid grid-cols-2 gap-3 py-5">
-                {[['12', 'Active applications'], ['3', 'Interviews'], ['8', 'Saved roles'], ['24%', 'Response rate']].map(([value, label]) => (
-                  <div className="rounded-2xl bg-slate-50 p-4" key={label}><p className="text-2xl font-bold text-slate-950">{value}</p><p className="mt-1 text-xs text-slate-500">{label}</p></div>
-                ))}
-              </div>
-              <div className="rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4">
-                <p className="text-xs font-bold uppercase tracking-wider text-indigo-600">Recommended next</p>
-                <p className="mt-2 font-semibold text-slate-900">Prepare for your product interview</p>
-                <p className="mt-1 text-sm text-slate-500">Tomorrow at 10:30 AM · 25 min prep plan</p>
-              </div>
+          <div className="preview-content">
+            <p className="eyebrow">Your next chapter</p>
+            <h2>A little focus. A lot of possibility.</h2>
+            <div className="preview-banner">
+              <div><span>Your next move is a great one.</span><p>Let’s make it happen.</p></div>
+              <Target size={36} strokeWidth={1.4} />
             </div>
-          </div>
-        </section>
-
-        <section className="border-y border-slate-200 bg-white">
-          <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
-            <div className="max-w-xl"><p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-600">One connected workflow</p><h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Move from searching to signed offer with clarity.</h2></div>
-            <div className="mt-10 grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-              {benefits.map((benefit) => <div className="flex items-center gap-3 text-sm font-semibold text-slate-700" key={benefit}><CheckCircle2 className="text-indigo-600" size={19} />{benefit}</div>)}
+            <div className="preview-metrics">
+              <div><strong>3</strong><span>Applications</span></div>
+              <div><strong>1</strong><span>Interview</span></div>
+              <div><strong>1</strong><span>Offer</span></div>
             </div>
+            <div className="preview-list-heading"><h3>Recent applications</h3><span>Sample workspace</span></div>
+            {[
+              { initials: 'DS', role: 'Product designer', company: 'Design studio', status: 'Interviewing', tone: 'interviewing' },
+              { initials: 'TL', role: 'Frontend engineer', company: 'Technology lab', status: 'Applied', tone: 'applied' },
+              { initials: 'PC', role: 'Product manager', company: 'Product company', status: 'Offer', tone: 'offer' },
+            ].map(({ initials, role, company, status, tone }) => (
+              <div className="preview-application" key={role}>
+                <span className="company-mark tone-neutral">{initials}</span>
+                <div><h4>{role}</h4><p>{company}</p></div>
+                <span className={`status-badge status-${tone}`}>{status}</span>
+              </div>
+            ))}
           </div>
-        </section>
-      </main>
-      <footer className="mx-auto flex max-w-7xl items-center justify-between px-5 py-8 text-xs text-slate-500 sm:px-8"><span>© 2026 Careerly</span><span>Built for focused job searches.</span></footer>
+        </div>
+      </div>
+      <div className="preview-float"><span><Check size={17} /></span><div><strong>A clearer path forward</strong><p>One organized workspace. Yours.</p></div></div>
     </div>
   )
 }
 
+export function LandingPage() {
+  return (
+    <div>
+      <a className="skip-link" href="#main-content">Skip to content</a>
+      <header className="public-header">
+        <Brand />
+        <a className="public-how-link" href="#how-it-works">How it works</a>
+        <nav className="public-nav" aria-label="Public navigation">
+          <Link className="btn btn-ghost" to="/login">Log in</Link>
+          <Link className="btn btn-primary" to="/signup">Get started <ArrowUpRight size={15} /></Link>
+        </nav>
+      </header>
+      <main id="main-content">
+        <section className="landing-hero">
+          <div className="hero-copy">
+            <p className="hero-kicker"><span className="status-dot" /> Your career. A clearer direction.</p>
+            <h1>Your next<br />career move.<br /><em>With confidence.</em></h1>
+            <p className="hero-description">Big ambitions deserve a clear plan. Bring your saved jobs, applications, and follow-ups into one workspace built around you.</p>
+            <div className="hero-actions">
+              <Link className="btn btn-primary" to="/signup">Build your next chapter <ArrowRight size={17} /></Link>
+              <a className="btn btn-secondary" href="#how-it-works">See how it works</a>
+            </div>
+            <div className="hero-reassurance"><span><Check size={14} /> Easy to get started</span><span><Check size={14} /> Built for your job search</span></div>
+          </div>
+          <WorkspacePreview />
+        </section>
+        <section className="landing-features" id="how-it-works">
+          <div className="features-heading">
+            <div><p className="eyebrow">A little structure. A lot more confidence.</p><h2>Your search, made simpler.</h2></div>
+            <p>Less time keeping track.<br />More energy for what comes next.</p>
+          </div>
+          <div className="feature-grid">
+            {features.map(({ icon: Icon, title, description, label }, index) => (
+              <article key={title}>
+                <div className="feature-card-top"><span className="feature-icon"><Icon size={22} strokeWidth={1.7} /></span><span className="feature-number">0{index + 1}</span></div>
+                <h3>{title}</h3><p>{description}</p>
+                <Link className="text-link" to="/signup">{label}<ArrowRight size={15} /></Link>
+              </article>
+            ))}
+          </div>
+        </section>
+        <section className="landing-cta">
+          <div><p className="eyebrow">Your future is worth a little focus</p><h2>Ready for your next chapter?</h2><p>Make room for the opportunities ahead.</p></div>
+          <Link className="btn btn-primary" to="/signup">Create your workspace <ArrowRight size={17} /></Link>
+        </section>
+      </main>
+      <footer className="public-footer"><span>© {new Date().getFullYear()} Careerly</span><span>Your career. Your next chapter.</span></footer>
+    </div>
+  )
+}
