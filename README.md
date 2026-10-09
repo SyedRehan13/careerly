@@ -2,7 +2,7 @@
 
 Careerly is an AI-assisted career workspace for managing the full job-search journey—from discovering roles and understanding fit to tracking applications, preparing for interviews, and reaching an offer.
 
-This repository currently contains a responsive React application shell, client-side routing, Supabase email/password authentication, profile, saved-job, application, and dashboard pages connected to FastAPI, and backend profile, saved-job, application-tracking, and dashboard APIs. AI features are still pending.
+This repository currently contains a responsive React application shell, client-side routing, Supabase authentication, profile, resume, saved-job, application, and dashboard pages connected to FastAPI. Resume content is account-scoped and can be exported through the browser's print-to-PDF flow. AI features are still pending.
 
 ## Architecture
 
@@ -30,6 +30,8 @@ The frontend runs at `http://localhost:5173` by default.
 The profile page at `/app/profile` loads career details from the backend and saves name, headline, location, and bio. Run both frontend and backend for this page to work, and point `VITE_API_BASE_URL` at your API if it is not `http://127.0.0.1:8000`. Requests send the current Supabase bearer token; the backend validates it. Profile query caches are keyed by user ID and discarded when the page unmounts. A session change prevents a form from saving to another user's account.
 
 To verify profile integration, log in, open `/app/profile`, edit a field, save, and reload to confirm it persists. Clear a field and save to check that it stays empty. Stop the backend to check the loading error and retry action. Log out and switch accounts to confirm each account sees its own details. Profile edits currently update the career profile only; account email and Supabase Auth metadata remain separate.
+
+The resume workspace at `/app/resume` saves contact details, summary, skills, experience, and education to the signed-in user's account. It also accepts one private PDF, DOC, or DOCX CV up to 10 MB per account; CV parsing and job matching are not implemented yet. The live preview updates as you edit; **Export PDF** opens the browser print dialog, where you can save the resume as a PDF. Apply database migrations before using the workspace. To verify it, fill in a few sections, save, reload, upload a CV, and export the preview. Switch accounts to confirm resumes and CV files are isolated.
 
 The saved-jobs page at `/app/jobs` loads real saved jobs with 20 entries per page. Use **Save a job** to enter a title and company, plus optional location, HTTP/HTTPS job link, and description. Jobs can be edited or deleted with confirmation. Blank optional fields are saved as null. Lists refresh after successful saves and deletions; requests validate the current session and caches are scoped by user ID. Loading, empty, retry, validation, and save/delete error states are included. Jobs are entered manually; automated discovery is not implemented.
 
@@ -67,7 +69,7 @@ From `backend`, apply migrations and check their status:
 .\venv\Scripts\python.exe -m alembic current
 ```
 
-The initial migration creates `public.profiles`, linked to `auth.users.id`, with name, headline, location, bio, and timestamps. Deleting an Auth user cascades to their profile. Row-level security restricts browser access to the profile owner. The profile API creates a missing profile on first access; signup creates the Supabase identity.
+The migrations create `public.profiles`, saved jobs, applications, and `public.resumes`, all linked to Supabase Auth users. They also create a private `careerly-cvs` Supabase Storage bucket, limited to 10 MB PDF, DOC, and DOCX files, with policies scoped to each user's folder. Deleting an Auth user cascades to their database records; CV objects are private and only accessible to their owner. The profile API creates a missing profile on first access; the resume API returns an empty draft until the user saves one.
 
 To prepare future schema changes, edit the models, run `python -m alembic revision --autogenerate -m "describe change"` using the backend virtual environment, and review the generated migration before applying it. Autogeneration excludes Supabase-managed and unrelated tables. Policies and other SQL objects require explicit migrations. `updated_at` is maintained on SQLAlchemy updates; direct SQL writes must update it explicitly.
 
@@ -97,6 +99,8 @@ Backend user, saved-job, and application endpoints require `Authorization: Beare
 - `GET /api/v1/users/me` returns the verified Supabase identity.
 - `GET /api/v1/users/me/profile` returns the database profile, creating it if needed.
 - `PATCH /api/v1/users/me/profile` updates name, headline, location, and bio. Omitted fields are preserved; explicit `null` clears a field. Unknown fields, including user IDs, are rejected. Name/headline/location allow 200 characters each; bio allows 5,000. Profile edits do not change Supabase Auth metadata.
+- `GET /api/v1/users/me/resume` reads the caller's resume, returning an empty draft when one has not been saved.
+- `PUT /api/v1/users/me/resume` saves the caller's contact details, summary, skills, experience, and education. Resume fields and list sizes are validated, and the table has owner-only RLS policies.
 
 - `POST /api/v1/saved-jobs` saves a manually entered job (201).
 - `GET /api/v1/saved-jobs?limit=20&offset=0` lists only the caller's jobs, newest first. The response is an array; limit is 1–100 and offset is nonnegative.
