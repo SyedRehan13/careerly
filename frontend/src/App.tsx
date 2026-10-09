@@ -49,6 +49,7 @@ export default function App() {
       '/login': 'Log in',
       '/signup': 'Create account',
       '/auth/confirmed': 'Email confirmation',
+      '/auth/callback': 'Email confirmation',
       '/app': 'Overview',
       '/app/jobs': 'Saved jobs',
       '/app/applications': 'Applications',
@@ -72,6 +73,7 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route index element={<LandingPage />} />
           <Route path="auth/confirmed" element={<EmailConfirmedPage />} />
+          <Route path="auth/callback" element={<EmailConfirmedPage />} />
           <Route element={<GuestRoute />}>
             <Route path="login" element={<LoginPage />} />
             <Route path="signup" element={<SignupPage />} />

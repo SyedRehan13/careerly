@@ -81,13 +81,14 @@ Authentication requires these values in `frontend/.env.local`:
 
 ```dotenv
 VITE_PUBLIC_APP_URL=http://localhost:5173
+VITE_GOOGLE_CLIENT_ID=your-google-oauth-client-id.apps.googleusercontent.com
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ```
 
 Find both values in the Supabase project **Connect** dialog. Use the publishable key (or legacy anon key), never a service-role or secret key in frontend code. `VITE_PUBLIC_APP_URL` optionally selects a browser-reachable email confirmation destination; it defaults to the current browser origin.
 
-In Supabase Authentication URL settings, allow `<VITE_PUBLIC_APP_URL>/auth/confirmed`. For cross-device testing on the same Wi-Fi, run Vite with `npm.cmd run dev -- --host 0.0.0.0`, set `VITE_PUBLIC_APP_URL` to the computer's LAN address (for example, `http://192.168.1.11:5173`), and allow the matching `/auth/confirmed` URL in Supabase.
+`VITE_GOOGLE_CLIENT_ID` is required for the Google sign-in button. Add the app's origin (for example, `http://localhost:5173`, plus any LAN or production origin) to the Google OAuth client's **Authorized JavaScript origins**. Keep the Google provider enabled in Supabase and configure it with the same Client ID and its Client Secret; the secret must stay only in Supabase and must never be added to frontend code or environment files. In Supabase Authentication URL settings, continue allowing `<VITE_PUBLIC_APP_URL>/auth/confirmed` and `<VITE_PUBLIC_APP_URL>/auth/callback`. For cross-device testing on the same Wi-Fi, run Vite with `npm.cmd run dev -- --host 0.0.0.0`, set `VITE_PUBLIC_APP_URL` to the computer's LAN address (for example, `http://192.168.1.11:5173`), and allow the matching confirmation and callback URLs in Supabase.
 
 ## Current routes
 
@@ -121,5 +122,5 @@ Applications are entered manually and require `title` and `company`. Optional fi
 
 Optional query parameters are `recent_limit` and `follow_up_limit` (each defaults to 5, range 1–20), and `as_of_date=YYYY-MM-DD` (defaults to UTC today). The frontend can supply the user's local date. The summary reads existing tables and does not create data. Counts cover all records, independent of list limits. Interview schedules, response rates, and reminders are not included because their underlying data is not tracked yet.
 
-- Public: `/`, `/login`, `/signup`, `/auth/confirmed`
+- Public: `/`, `/login`, `/signup`, `/auth/confirmed`, `/auth/callback`
 - Protected: `/app`, `/app/jobs`, `/app/applications`, `/app/resume`, `/app/interview`, `/app/profile`
