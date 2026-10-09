@@ -7,12 +7,14 @@ export function GuestRoute() {
 
   if (isLoading) {
     return (
-      <div className="grid min-h-screen place-items-center bg-slate-50 text-slate-500">
-        <LoaderCircle className="animate-spin" size={20} aria-label="Loading session" />
+      <div className="grid min-h-screen place-items-center bg-[var(--canvas)]">
+        <span role="status" className="flex gap-3 items-center text-sm muted">
+          <LoaderCircle className="animate-spin text-brand-600" size={20} />
+          Opening Careerly…
+        </span>
       </div>
     )
   }
 
   return user ? <Navigate to="/app" replace /> : <Outlet />
 }
-

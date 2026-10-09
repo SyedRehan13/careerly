@@ -1,10 +1,16 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
-import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, LoaderCircle } from 'lucide-react'
+import {
+  ArrowLeft, ArrowRight, ArrowUpRight, Bookmark, CalendarDays, Check,
+  ClipboardList, Eye, EyeOff, Layers3, LoaderCircle, LockKeyhole, Mail, UserRound,
+} from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { Brand } from '../components/common/Brand'
+import { GoogleSignInButton } from '../components/auth/GoogleSignInButton'
+import { SuccessNotice } from '../components/common/WorkspaceUI'
 import { useAuth } from '../hooks/useAuth'
+import '../styles/auth.css'
 
 interface AuthPageProps {
   mode: 'login' | 'signup'
@@ -24,14 +30,19 @@ function PasswordField({ id, label, value, onChange, autoComplete, error }: Pass
 
   return (
     <div>
-      <label className="block text-sm font-semibold text-slate-700" htmlFor={id}>{label}</label>
-      <div className="relative mt-2">
+      <label className="field-label" htmlFor={id}>
+        {label}
+      </label>
+      <div className="password-wrap auth-input">
+        <LockKeyhole size={17} className="auth-input-icon" aria-hidden="true" />
         <input
           id={id}
-          className={`w-full rounded-xl border bg-white px-4 py-3 pr-12 font-normal outline-none transition focus:ring-4 ${error ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-100' : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-100'}`}
+          className="field"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          placeholder="At least 8 characters"
+          placeholder={
+            autoComplete === 'new-password' ? 'At least 8 characters' : 'Enter your password'
+          }
           autoComplete={autoComplete}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${id}-error` : undefined}
@@ -40,7 +51,7 @@ function PasswordField({ id, label, value, onChange, autoComplete, error }: Pass
           type={isVisible ? 'text' : 'password'}
         />
         <button
-          className="absolute inset-y-0 right-0 grid w-12 place-items-center text-slate-400 transition hover:text-slate-700"
+          className="password-toggle"
           type="button"
           onClick={() => setIsVisible((visible) => !visible)}
           aria-label={isVisible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
@@ -49,7 +60,11 @@ function PasswordField({ id, label, value, onChange, autoComplete, error }: Pass
           {isVisible ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
       </div>
-      {error && <p className="mt-2 text-xs font-medium text-rose-600" id={`${id}-error`}>{error}</p>}
+      {error && (
+        <p className="mt-2 text-xs text-[var(--danger)]" id={`${id}-error`}>
+          {error}
+        </p>
+      )}
     </div>
   )
 }
@@ -59,11 +74,60 @@ function getErrorMessage(error: unknown) {
 }
 
 function getRedirectPath(state: unknown) {
-  if (typeof state === 'object' && state !== null && 'from' in state && typeof state.from === 'string') {
+  if (
+    typeof state === 'object' &&
+    state !== null &&
+    'from' in state &&
+    typeof state.from === 'string'
+  ) {
     return state.from
   }
 
   return '/app'
+}
+
+function AuthShowcase({ isLogin }: { isLogin: boolean }) {
+  return (
+    <aside className="auth-story" aria-label="Your Careerly workspace">
+      <div className="auth-story-topline">
+        <span className="auth-story-tag"><span /> A little clarity. A lot of possibility.</span>
+        <ArrowUpRight size={21} aria-hidden="true" />
+      </div>
+      <div className="auth-story-copy">
+        <p className="eyebrow">Your career, with direction</p>
+        <h2>{isLogin ? <>Good things<br />are <em>ahead.</em></> : <>Make room<br />for <em>what’s next.</em></>}</h2>
+        <p>{isLogin
+          ? 'Pick up where you left off. Your opportunities, conversations, and next steps are right here.'
+          : 'Your ambitions deserve a place of their own. Bring your job search together and move forward with a clear plan.'}</p>
+      </div>
+      <div className="auth-workspace-art">
+        <div className="auth-preview-card">
+          <div className="auth-preview-heading">
+            <span className="auth-preview-mark"><Layers3 size={20} /></span>
+            <div><p>YOUR PERSONAL WORKSPACE</p><h3>Everything in its place.</h3></div>
+            <span className="auth-preview-dots" aria-hidden="true">•••</span>
+          </div>
+          {[
+            { icon: Bookmark, title: 'Opportunities worth saving', copy: 'A shortlist built around you.', number: '01' },
+            { icon: ClipboardList, title: 'Every application, in view', copy: 'From the first step to the final offer.', number: '02' },
+            { icon: CalendarDays, title: 'Your next move, planned', copy: 'Follow-ups that stay on your radar.', number: '03' },
+          ].map(({ icon: Icon, title, copy, number }) => (
+            <div className="auth-preview-row" key={number}>
+              <span className="auth-preview-icon"><Icon size={18} strokeWidth={1.7} /></span>
+              <div><h4>{title}</h4><p>{copy}</p></div>
+              <span className="auth-preview-number">{number}</span>
+            </div>
+          ))}
+          <div className="auth-preview-caption"><span className="status-dot" /> A preview of a more organized search</div>
+        </div>
+        <div className="auth-floating-note">
+          <span><Check size={17} /></span>
+          <div><strong>One clear next step.</strong><p>That’s where progress begins.</p></div>
+        </div>
+      </div>
+      <div className="auth-story-bottom"><span>Built around your next chapter.</span><span>CAREERLY</span></div>
+    </aside>
+  )
 }
 
 export function AuthPage({ mode }: AuthPageProps) {
@@ -98,7 +162,9 @@ export function AuthPage({ mode }: AuthPageProps) {
       } else {
         const result = await signUp({ fullName, email, password })
         if (result.emailConfirmationRequired) {
-          setSuccessMessage('Check your email on any device. After confirming, return to this laptop and log in.')
+          setSuccessMessage(
+            'Check your email to confirm your account. You can open the link on any device, then return here to log in.',
+          )
         } else {
           navigate('/app', { replace: true })
         }
@@ -111,57 +177,148 @@ export function AuthPage({ mode }: AuthPageProps) {
   }
 
   return (
-    <main className="grid min-h-screen lg:grid-cols-2">
-      <section className="flex flex-col px-5 py-6 sm:px-10 lg:px-16">
-        <div className="flex items-center justify-between">
+    <main className={`auth-layout auth-layout--${mode}`}>
+        <header className="auth-topbar">
           <Brand />
-          <Link className="inline-flex items-center gap-1 text-sm font-semibold text-slate-500 hover:text-slate-900" to="/"><ArrowLeft size={16} /> Home</Link>
-        </div>
-        <div className="mx-auto my-auto w-full max-w-md py-16">
-          <p className="text-sm font-bold text-indigo-600">{isLogin ? 'WELCOME BACK' : 'START YOUR JOURNEY'}</p>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">{isLogin ? 'Log in to Careerly' : 'Create your Careerly account'}</h1>
-          <p className="mt-2 text-sm text-slate-500">{isLogin ? 'Pick up where you left off in your job search.' : 'Bring every part of your job search into one focused workspace.'}</p>
-
+          <Link className="auth-back-link" to="/">
+            <ArrowLeft size={14} />
+            Back to home
+          </Link>
+        </header>
+      <div className="auth-shell">
+      <section className="auth-main" aria-labelledby="auth-title">
+        <div className="auth-form-area">
+          <nav className="auth-mode-switch" aria-label="Account access">
+            <Link to="/login" aria-current={isLogin ? 'page' : undefined}>Log in</Link>
+            <Link to="/signup" aria-current={!isLogin ? 'page' : undefined}>Sign up</Link>
+          </nav>
+          <span className="auth-welcome-icon" aria-hidden="true">{isLogin ? <LockKeyhole size={24} strokeWidth={1.6} /> : <UserRound size={24} strokeWidth={1.6} />}</span>
+          <p className="eyebrow text-brand-600">
+            {isLogin ? 'Welcome to your workspace' : 'Your career starts here'}
+          </p>
+          <h1 id="auth-title">{isLogin ? 'Good to have you back.' : 'Make your next move.'}</h1>
+          <p className="auth-form-description">
+            {isLogin
+              ? 'Log in and pick up where you left off.'
+              : 'One account for your saved jobs, applications, and next steps.'}
+          </p>
           {!isConfigured && (
-            <div className="mt-6 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="alert">
-              <AlertCircle className="mt-0.5 shrink-0" size={18} />
-              <div><p className="font-bold">Supabase setup required</p><p className="mt-1 leading-5 text-amber-800">Add your project URL and publishable key to <code>frontend/.env.local</code>, then restart the development server.</p></div>
+            <p className="notice notice-warning mt-6" role="alert">
+              Sign-in is temporarily unavailable. Please try again once the service is configured.
+            </p>
+          )}
+          {error && (
+            <p className="notice notice-error mt-6" role="alert">
+              {error}
+            </p>
+          )}
+          {successMessage && (
+            <div className="mt-6">
+              <SuccessNotice>{successMessage}</SuccessNotice>
             </div>
           )}
-
-          {error && <div className="mt-6 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700" role="alert"><AlertCircle className="mt-0.5 shrink-0" size={17} />{error}</div>}
-          {successMessage && <div className="mt-6 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700" role="status"><CheckCircle2 className="mt-0.5 shrink-0" size={17} />{successMessage}</div>}
-
-          <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-            {!isLogin && (
-              <label className="block text-sm font-semibold text-slate-700">Full name
-                <input className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-normal outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100" value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="Your name" autoComplete="name" minLength={2} required type="text" />
+          <form className="mt-7" onSubmit={handleSubmit}>
+            <fieldset disabled={isSubmitting} className="auth-fields">
+              {!isLogin && (
+                <label className="field-label">
+                  Full name
+                  <span className="auth-input">
+                  <UserRound size={17} className="auth-input-icon" aria-hidden="true" />
+                  <input
+                    className="field"
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
+                    placeholder="Your name"
+                    autoComplete="name"
+                    minLength={2}
+                    required
+                    type="text"
+                  />
+                  </span>
+                </label>
+              )}
+              <label className="field-label">
+                Email address
+                <span className="auth-input">
+                <Mail size={17} className="auth-input-icon" aria-hidden="true" />
+                <input
+                  className="field"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  required
+                  type="email"
+                />
+                </span>
               </label>
-            )}
-            <label className="block text-sm font-semibold text-slate-700">Email address
-              <input className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-normal outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" required type="email" />
-            </label>
-            <PasswordField id="password" label="Password" value={password} onChange={setPassword} autoComplete={isLogin ? 'current-password' : 'new-password'} />
-            {!isLogin && (
               <PasswordField
-                id="confirm-password"
-                label="Confirm password"
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-                autoComplete="new-password"
-                error={confirmPassword && password !== confirmPassword ? 'Passwords do not match.' : undefined}
+                id="password"
+                label="Password"
+                value={password}
+                onChange={setPassword}
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
               />
-            )}
-            <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-100 hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60" disabled={!isConfigured || isSubmitting} type="submit">
-              {isSubmitting && <LoaderCircle className="animate-spin" size={17} />}{isSubmitting ? 'Please wait…' : isLogin ? 'Log in' : 'Create account'}
-            </button>
+              {!isLogin && (
+                <>
+                <PasswordField
+                  id="confirm-password"
+                  label="Confirm password"
+                  value={confirmPassword}
+                  onChange={setConfirmPassword}
+                  autoComplete="new-password"
+                  error={
+                    confirmPassword && password !== confirmPassword
+                      ? 'Passwords do not match.'
+                      : undefined
+                  }
+                />
+                <div className="auth-password-guide" aria-label="Password requirements">
+                  <span className={password.length >= 8 ? 'satisfied' : ''}>
+                    {password.length >= 8 ? <Check size={13} aria-hidden="true" /> : <span className="auth-requirement-dot" aria-hidden="true" />} At least 8 characters
+                    {password.length >= 8 && <span className="sr-only"> — met</span>}
+                  </span>
+                  <span className={Boolean(confirmPassword) && password === confirmPassword ? 'satisfied' : ''}>
+                    {Boolean(confirmPassword) && password === confirmPassword ? <Check size={13} aria-hidden="true" /> : <span className="auth-requirement-dot" aria-hidden="true" />} Passwords match
+                    {Boolean(confirmPassword) && password === confirmPassword && <span className="sr-only"> — met</span>}
+                  </span>
+                </div>
+                </>
+              )}
+              <button
+                className="btn btn-primary w-full auth-submit"
+                disabled={!isConfigured || isSubmitting}
+                type="submit"
+              >
+                {isSubmitting ? <LoaderCircle className="animate-spin" size={16} /> : null}
+                {isSubmitting
+                  ? 'Just a moment…'
+                  : isLogin
+                    ? 'Log in to your workspace'
+                    : 'Create your account'}
+                {!isSubmitting && <ArrowRight size={15} />}
+              </button>
+            </fieldset>
           </form>
-          <p className="mt-6 text-center text-sm text-slate-500">{isLogin ? 'New to Careerly?' : 'Already have an account?'} <Link className="font-bold text-indigo-600 hover:text-indigo-700" to={isLogin ? '/signup' : '/login'}>{isLogin ? 'Create an account' : 'Log in'}</Link></p>
+          <div className="auth-divider" aria-hidden="true"><span>or continue with</span></div>
+          <GoogleSignInButton />
+          <p className="auth-switch-prompt">
+            {isLogin ? 'New here?' : 'Already have an account?'}{' '}
+            <Link className="text-link text-xs" to={isLogin ? '/signup' : '/login'}>
+              {isLogin ? 'Sign up' : 'Log in'}
+            </Link>
+          </p>
+          <div className="auth-form-note"><LockKeyhole size={13} aria-hidden="true" /> Your personal career workspace</div>
+        </div>
+        <div className="auth-benefits" aria-label="Included in your workspace">
+          <span><Bookmark size={14} /> Save roles</span>
+          <span><ClipboardList size={14} /> Track progress</span>
+          <span><CalendarDays size={14} /> Plan next steps</span>
         </div>
       </section>
-      <section className="hidden items-center justify-center bg-slate-950 p-16 text-white lg:flex">
-        <div className="max-w-lg"><p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-300">From opportunity to offer</p><blockquote className="mt-5 text-4xl font-semibold leading-tight tracking-tight">“A calm, organized job search creates room for your best work to show.”</blockquote><div className="mt-10 h-px bg-white/15" /><p className="mt-6 text-sm leading-6 text-slate-400">Careerly keeps the next right action visible, whether you are saving a role, tailoring your resume, or preparing for the conversation that matters.</p></div>
-      </section>
+      <AuthShowcase isLogin={isLogin} />
+      </div>
+      <footer className="auth-footer"><span>© {new Date().getFullYear()} Careerly</span><span>Your career. Your next chapter.</span></footer>
     </main>
   )
 }

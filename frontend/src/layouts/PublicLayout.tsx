@@ -1,3 +1,17 @@
 import { Outlet } from 'react-router-dom'
-export function PublicLayout() { return <div className="min-h-screen bg-[#fbfcff] text-slate-900"><Outlet /></div> }
-
+import { Suspense } from 'react'
+export function PublicLayout() {
+  return (
+    <div className="public-layout">
+      <Suspense
+        fallback={
+          <p role="status" className="min-h-screen grid place-items-center text-sm muted">
+            Opening Careerly…
+          </p>
+        }
+      >
+        <Outlet />
+      </Suspense>
+    </div>
+  )
+}

@@ -1,17 +1,34 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bookmark, ExternalLink, MapPin, Plus } from 'lucide-react'
+import { ArrowRight, Bookmark, ExternalLink, Lightbulb, MapPin, Plus, Search } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useWorkspaceEditor } from '../../hooks/useWorkspaceEditor'
 
 import { PageHeader } from '../common/PageHeader'
+import { WorkspaceToolbar } from '../common/WorkspaceToolbar'
 import { getApiErrorMessage } from '../../services/api'
-import { deleteSavedJob, getSavedJobs, SAVED_JOBS_PAGE_SIZE, savedJobsQueryKey } from '../../services/saved-jobs'
+import {
+  deleteSavedJob,
+  getSavedJobs,
+  SAVED_JOBS_PAGE_SIZE,
+  savedJobsQueryKey,
+} from '../../services/saved-jobs'
 import type { SavedJob } from '../../types/saved-job'
 import { safeJobUrl } from '../../utils/job-url'
 import { SavedJobForm } from './SavedJobForm'
+import {
+  CompanyMark,
+  DeleteConfirmation,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  SuccessNotice,
+} from '../common/WorkspaceUI'
 
 export function SavedJobsWorkspace({ userId }: { userId: string }) {
+  const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
-  const [editor, setEditor] = useState<{ job: SavedJob | null } | null>(null)
+  const [editor, setEditor] = useWorkspaceEditor<SavedJob>()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
   const queryClient = useQueryClient()
@@ -22,6 +39,12 @@ export function SavedJobsWorkspace({ userId }: { userId: string }) {
     retry: false,
   })
   const jobs = query.data?.slice(0, SAVED_JOBS_PAGE_SIZE) ?? []
+  const visibleJobs = jobs.filter((job) =>
+    [job.title, job.company, job.location ?? '']
+      .join(' ')
+      .toLowerCase()
+      .includes(search.trim().toLowerCase()),
+  )
   const hasNext = (query.data?.length ?? 0) > SAVED_JOBS_PAGE_SIZE
 
   async function refreshJobs() {
@@ -42,68 +65,228 @@ export function SavedJobsWorkspace({ userId }: { userId: string }) {
   })
 
   async function saved(job: SavedJob) {
-    const wasCreating = editor?.job === null
+    const wasCreating = editor?.record === null
     setNotice(`${job.title} ${wasCreating ? 'saved' : 'updated'}.`)
+    setSearch('')
     setEditor(null)
     if (wasCreating) setPage(0)
     await refreshJobs()
   }
 
+  function openEditor(job: SavedJob | null) {
+    setEditor({ record: job })
+    setDeleteId(null)
+    deletion.reset()
+    setNotice('')
+  }
+
   return (
-    <div className="space-y-6">
-      <PageHeader eyebrow="Opportunities" title="Saved jobs" description="Keep promising opportunities organized in one place." action={
-        <button type="button" disabled={editor !== null || deletion.isPending} onClick={() => { setEditor({ job: null }); setDeleteId(null); deletion.reset(); setNotice('') }} className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50"><Plus size={18} />Save a job</button>
-      } />
-      {notice && <p role="status" className="text-sm font-semibold text-emerald-700">{notice}</p>}
-      {editor && <SavedJobForm key={editor.job?.id ?? 'new'} userId={userId} job={editor.job} onSaved={saved} onCancel={() => setEditor(null)} />}
-      {query.isPending && <p role="status" className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500">Loading saved jobs…</p>}
-      {query.isError && (
-        <div role="alert" className="space-y-3 rounded-2xl border border-red-200 bg-white p-6 text-sm text-red-700">
-          <p>{getApiErrorMessage(query.error)}</p>
-          <button type="button" disabled={query.isFetching} onClick={() => { void query.refetch() }} className="rounded-xl border border-slate-300 px-4 py-2 font-semibold text-slate-700 disabled:opacity-50">{query.isFetching ? 'Retrying…' : 'Try again'}</button>
-        </div>
+    <div className="page-stack workspace-page workspace-page--saved-jobs">
+      <PageHeader
+        eyebrow="Your job shortlist"
+        title="Your saved opportunities"
+        description="Save interesting roles, compare the details, and decide where to apply next."
+        action={
+          <button
+            type="button"
+            disabled={editor !== null || deletion.isPending}
+            onClick={() => openEditor(null)}
+            className="btn btn-primary"
+          >
+            <Plus size={16} />
+            Save a job
+          </button>
+        }
+      />
+      {notice && <SuccessNotice>{notice}</SuccessNotice>}
+      {editor && (
+        <SavedJobForm
+          key={editor.record?.id ?? 'new'}
+          userId={userId}
+          job={editor.record}
+          onSaved={saved}
+          onCancel={() => setEditor(null)}
+        />
       )}
-      {query.isSuccess && jobs.length === 0 && (
-        <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
-          <Bookmark className="mx-auto text-indigo-500" size={28} />
-          <h2 className="mt-4 text-lg font-bold text-slate-950">{page === 0 ? 'No saved jobs yet' : 'No jobs on this page'}</h2>
-          <p className="mt-2 text-sm text-slate-500">{page === 0 ? 'Use “Save a job” to add your first opportunity.' : 'Use Previous to return to your saved jobs.'}</p>
+      <WorkspaceToolbar
+        title="Your shortlist"
+        search={search}
+        onSearch={setSearch}
+        searchLabel="Search jobs on this page"
+        description={query.isSuccess
+            ? `${visibleJobs.length} ${visibleJobs.length === 1 ? 'opportunity' : 'opportunities'} on this page · Newest first`
+            : 'Keep promising roles close, from any job board.'}
+      />
+      {query.isPending && <LoadingState label="Loading saved opportunities" />}
+      {query.isError && (
+        <ErrorState
+          message={getApiErrorMessage(query.error)}
+          retry={() => {
+            void query.refetch()
+          }}
+          busy={query.isFetching}
+          stale={Boolean(query.data)}
+        />
+      )}
+      {query.isSuccess && visibleJobs.length === 0 && (
+        <section className="panel">
+          <EmptyState
+            icon={search ? Search : Bookmark}
+            title={
+              search
+                ? 'Nothing matched this time'
+                : page === 0
+                  ? 'Good things are worth saving'
+                  : 'You have reached the end'
+            }
+            description={
+              search
+                ? 'Try a different title, company, or location. Search covers the jobs on this page.'
+                : page === 0
+                  ? 'Found an interesting role? Save its details here and build a shortlist that feels right for you.'
+                  : 'Go back to revisit your saved opportunities.'
+            }
+            action={
+              search ? (
+                <button className="btn btn-secondary" type="button" onClick={() => setSearch('')}>
+                  Clear search
+                </button>
+              ) : page > 0 ? (
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  onClick={() => setPage(page - 1)}
+                >
+                  Previous page
+                </button>
+              ) : (
+                <button
+                  className="btn btn-primary"
+                  type="button"
+                  disabled={editor !== null}
+                  onClick={() => openEditor(null)}
+                >
+                  <Plus size={15} />
+                  Save your first job
+                </button>
+              )
+            }
+          />
         </section>
       )}
-      <div className="grid gap-4 lg:grid-cols-2">
-        {jobs.map((job) => {
+      <div className="job-grid">
+        {visibleJobs.map((job) => {
           const url = safeJobUrl(job.job_url)
-          const confirming = deleteId === job.id
           return (
-            <article key={job.id} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="break-words text-lg font-bold text-slate-950">{job.title}</h2>
-              <p className="mt-1 break-words text-sm font-semibold text-slate-600">{job.company}</p>
-              {job.location && <p className="mt-3 flex items-center gap-2 text-sm text-slate-500"><MapPin size={15} className="shrink-0" />{job.location}</p>}
-              {job.description && <details className="mt-4 text-sm text-slate-600"><summary className="cursor-pointer font-semibold text-slate-700">Job description</summary><p className="mt-3 whitespace-pre-wrap break-words leading-6">{job.description}</p></details>}
-              <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
-                {url && <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm font-bold text-indigo-600">Open job <ExternalLink size={14} /></a>}
-                <button type="button" disabled={editor !== null || deletion.isPending} onClick={() => { setEditor({ job }); setDeleteId(null); deletion.reset(); setNotice('') }} className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-50" aria-label={`Edit ${job.title} at ${job.company}`}>Edit</button>
-                <button type="button" disabled={editor !== null || deletion.isPending} onClick={() => { setDeleteId(job.id); deletion.reset(); setNotice('') }} className="rounded-lg px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50" aria-label={`Delete ${job.title} at ${job.company}`}>Delete</button>
-              </div>
-              {confirming && (
-                <div className="mt-3 rounded-xl bg-red-50 p-4">
-                  <p className="text-sm text-red-900">Delete this saved job? This cannot be undone.</p>
-                  {deletion.isError && <p role="alert" className="mt-2 text-sm text-red-700">{getApiErrorMessage(deletion.error)}</p>}
-                  <div className="mt-3 flex gap-3">
-                    <button type="button" disabled={deletion.isPending} onClick={() => deletion.mutate(job.id)} className="rounded-lg bg-red-600 px-3 py-2 text-sm font-bold text-white disabled:opacity-50">{deletion.isPending ? 'Deleting…' : 'Confirm delete'}</button>
-                    <button type="button" disabled={deletion.isPending} onClick={() => { setDeleteId(null); deletion.reset() }} className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 disabled:opacity-50">Cancel</button>
-                  </div>
+            <article key={job.id} className="panel job-card">
+              <div className="job-card-header">
+                <CompanyMark name={job.company} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs muted mb-1">{job.company}</p>
+                  <h2>{job.title}</h2>
                 </div>
+                <span className="saved-label"><Bookmark size={13} /> Saved</span>
+              </div>
+              {job.location && (
+                <p className="job-meta">
+                  <MapPin size={13} />
+                  {job.location}
+                </p>
+              )}
+              <p className="job-meta text-[11px]">
+                Saved{' '}
+                {new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(
+                  new Date(job.created_at),
+                )}
+              </p>
+              {job.description && (
+                <details className="details">
+                  <summary>About this opportunity</summary>
+                  <p>{job.description}</p>
+                </details>
+              )}
+              <div className="flex-1" />
+              <div className="job-card-actions">
+                {url && (
+                  <a href={url} target="_blank" rel="noopener noreferrer" className="text-link">
+                    View opportunity <ExternalLink size={13} />
+                  </a>
+                )}
+                <button
+                  type="button"
+                  disabled={editor !== null || deletion.isPending}
+                  onClick={() => openEditor(job)}
+                  className="btn btn-secondary btn-small"
+                  aria-label={`Edit ${job.title} at ${job.company}`}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  disabled={editor !== null || deletion.isPending}
+                  onClick={() => {
+                    setDeleteId(job.id)
+                    deletion.reset()
+                    setNotice('')
+                  }}
+                  className="btn btn-danger-ghost btn-small"
+                  aria-label={`Delete ${job.title} at ${job.company}`}
+                >
+                  Delete
+                </button>
+              </div>
+              {deleteId === job.id && (
+                <DeleteConfirmation
+                  title="this saved job"
+                  pending={deletion.isPending}
+                  error={deletion.isError ? getApiErrorMessage(deletion.error) : undefined}
+                  onConfirm={() => deletion.mutate(job.id)}
+                  onCancel={() => {
+                    setDeleteId(null)
+                    deletion.reset()
+                  }}
+                />
               )}
             </article>
           )
         })}
       </div>
+      {query.isSuccess && jobs.length > 0 && (
+        <aside className="workspace-tip">
+          <span className="tip-icon"><Lightbulb size={20} /></span>
+          <div><h2>Found a role worth going for?</h2><p>Once you apply, add it to your tracker to keep notes, status updates, and follow-ups together.</p></div>
+          <Link className="text-link" to="/app/applications?action=new">Track an application <ArrowRight size={15} /></Link>
+        </aside>
+      )}
       {(page > 0 || hasNext) && (
-        <nav aria-label="Saved job pages" className="flex items-center justify-between gap-3">
-          <button type="button" disabled={page === 0 || query.isFetching || deletion.isPending || editor !== null} onClick={() => { setPage(page - 1); setDeleteId(null); setNotice('') }} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold disabled:opacity-50">Previous</button>
-          <span className="text-sm text-slate-500">Page {page + 1}</span>
-          <button type="button" disabled={!hasNext || query.isFetching || deletion.isPending || editor !== null} onClick={() => { setPage(page + 1); setDeleteId(null); setNotice('') }} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold disabled:opacity-50">Next</button>
+        <nav aria-label="Saved job pages" className="pagination">
+          <button
+            type="button"
+            disabled={page === 0 || query.isFetching || deletion.isPending || editor !== null}
+            onClick={() => {
+              setPage(page - 1)
+              setSearch('')
+              setDeleteId(null)
+              setNotice('')
+            }}
+            className="btn btn-secondary"
+          >
+            Previous
+          </button>
+          <span>Page {page + 1}</span>
+          <button
+            type="button"
+            disabled={!hasNext || query.isFetching || deletion.isPending || editor !== null}
+            onClick={() => {
+              setPage(page + 1)
+              setSearch('')
+              setDeleteId(null)
+              setNotice('')
+            }}
+            className="btn btn-secondary"
+          >
+            Next
+          </button>
         </nav>
       )}
     </div>

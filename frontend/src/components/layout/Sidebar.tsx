@@ -1,50 +1,179 @@
-import { Briefcase, ClipboardList, FileText, LayoutDashboard, LogOut, MessagesSquare, UserRound, X } from 'lucide-react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import {
+  Bookmark,
+  ClipboardList,
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  MessagesSquare,
+  UserRound,
+  X,
+} from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { Brand } from '../common/Brand'
 import { useAuth } from '../../hooks/useAuth'
 
-const navigation = [
-  { label: 'Dashboard', to: '/app', icon: LayoutDashboard, end: true },
-  { label: 'Jobs', to: '/app/jobs', icon: Briefcase, end: false },
-  { label: 'Applications', to: '/app/applications', icon: ClipboardList, end: false },
-  { label: 'Resume', to: '/app/resume', icon: FileText, end: false },
-  { label: 'Interview Prep', to: '/app/interview', icon: MessagesSquare, end: false },
-  { label: 'Profile', to: '/app/profile', icon: UserRound, end: false },
-] as const
+const groups = [
+  {
+    title: 'Workspace',
+    items: [
+      { label: 'Overview', to: '/app', icon: LayoutDashboard, soon: false },
+      { label: 'Applications', to: '/app/applications', icon: ClipboardList, soon: false },
+      { label: 'Saved jobs', to: '/app/jobs', icon: Bookmark, soon: false },
+    ],
+  },
+  {
+    title: 'Career tools',
+    items: [
+      { label: 'Resume', to: '/app/resume', icon: FileText, soon: true },
+      { label: 'Interview prep', to: '/app/interview', icon: MessagesSquare, soon: true },
+    ],
+  },
+  {
+    title: 'Personal',
+    items: [{ label: 'Your profile', to: '/app/profile', icon: UserRound, soon: false }],
+  },
+]
 
-interface SidebarProps { open: boolean; onClose: () => void }
-
-export function Sidebar({ open, onClose }: SidebarProps) {
+export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { signOut, user } = useAuth()
   const navigate = useNavigate()
-  const fullName = typeof user?.user_metadata.full_name === 'string' ? user.user_metadata.full_name : 'Careerly member'
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const [isSigningOut, setIsSigningOut] = useState(false)
+  const [error, setError] = useState('')
+  const fullName =
+    typeof user?.user_metadata.full_name === 'string' && user.user_metadata.full_name.trim()
+      ? user.user_metadata.full_name
+      : 'Careerly member'
+  const initials = fullName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    if (!open) {
+      dialog?.close()
+      return
+    }
+    const trigger = document.activeElement
+    dialog?.showModal()
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const wide = window.matchMedia('(min-width: 1024px)')
+    const closeOnWide = () => {
+      if (wide.matches) onClose()
+    }
+    wide.addEventListener('change', closeOnWide)
+    return () => {
+      dialog?.close()
+      document.body.style.overflow = originalOverflow
+      wide.removeEventListener('change', closeOnWide)
+      if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus()
+    }
+  }, [open, onClose])
 
   async function handleSignOut() {
-    await signOut()
-    onClose()
-    navigate('/login', { replace: true })
+    setError('')
+    setIsSigningOut(true)
+    try {
+      await signOut()
+      onClose()
+      navigate('/login', { replace: true })
+    } catch {
+      setError('Could not log out. Please try again.')
+    } finally {
+      setIsSigningOut(false)
+    }
   }
 
-  return (
-    <>
-      {open && <button className="fixed inset-0 z-40 bg-slate-950/30 backdrop-blur-[1px] lg:hidden" onClick={onClose} aria-label="Close navigation" type="button" />}
-      <aside className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-slate-200 bg-white px-4 py-5 transition-transform duration-200 lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex items-center justify-between px-2">
+  function content(mobile: boolean) {
+    return (
+      <>
+        <div className="sidebar-brand flex items-center justify-between">
           <Brand to="/app" />
-          <button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden" onClick={onClose} aria-label="Close navigation" type="button"><X size={20} /></button>
+          {mobile && (
+            <button
+              className="icon-button"
+              type="button"
+              onClick={onClose}
+              aria-label="Close navigation"
+            >
+              <X size={19} />
+            </button>
+          )}
         </div>
-        <nav className="mt-9 flex-1 space-y-1" aria-label="Application navigation">
-          {navigation.map(({ label, to, icon: Icon, end }) => (
-            <NavLink key={to} to={to} end={end} onClick={onClose} className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${isActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'}`}>
-              <Icon size={19} strokeWidth={1.9} />{label}
-            </NavLink>
+        <nav aria-label={mobile ? 'Mobile navigation' : 'Main navigation'}>
+          {groups.map((group) => (
+            <div className="nav-group" key={group.title}>
+              <p className="nav-label">{group.title}</p>
+              {group.items.map(({ label, to, icon: Icon, soon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={to === '/app'}
+                  onClick={onClose}
+                  className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                >
+                  <Icon size={18} strokeWidth={1.7} />
+                  {label}
+                  {soon && <span className="soon-tag">Soon</span>}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
-        <div className="border-t border-slate-100 pt-4">
-          <div className="px-3 pb-3"><p className="truncate text-sm font-bold text-slate-900">{fullName}</p><p className="mt-0.5 truncate text-xs text-slate-500">{user?.email}</p></div>
-          <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-rose-50 hover:text-rose-700" onClick={() => void handleSignOut()} type="button"><LogOut size={18} />Log out</button>
+        {error && (
+          <p className="notice notice-error text-xs mb-2" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="account-area">
+          <Link className="account-link" to="/app/profile" onClick={onClose}>
+            <span className="avatar">{initials}</span>
+            <div className="min-w-0">
+              <p className="account-name">{fullName}</p>
+              <p className="account-email">{user?.email}</p>
+            </div>
+          </Link>
+          <button
+            className="icon-button"
+            onClick={() => void handleSignOut()}
+            type="button"
+            disabled={isSigningOut}
+            aria-label={isSigningOut ? 'Logging out' : 'Log out'}
+            title="Log out"
+          >
+            <LogOut size={16} />
+          </button>
         </div>
-      </aside>
+      </>
+    )
+  }
+  return (
+    <>
+      <aside className="sidebar desktop-sidebar">{content(false)}</aside>
+      <dialog
+        className="mobile-drawer"
+        ref={dialogRef}
+        aria-label="Careerly navigation"
+        onCancel={(event) => {
+          event.preventDefault()
+          onClose()
+        }}
+        onClick={(event) => {
+          if (
+            event.target === event.currentTarget &&
+            event.clientX >= event.currentTarget.getBoundingClientRect().right
+          )
+            onClose()
+        }}
+      >
+        <div className="sidebar">{content(true)}</div>
+      </dialog>
     </>
   )
 }

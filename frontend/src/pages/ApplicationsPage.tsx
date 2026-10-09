@@ -5,4 +5,3 @@ export function ApplicationsPage() {
   const { user } = useAuth()
   return user ? <ApplicationsWorkspace key={user.id} userId={user.id} /> : null
 }
-

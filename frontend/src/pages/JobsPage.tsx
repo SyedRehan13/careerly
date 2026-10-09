@@ -5,4 +5,3 @@ export function JobsPage() {
   const { user } = useAuth()
   return user ? <SavedJobsWorkspace key={user.id} userId={user.id} /> : null
 }
-
