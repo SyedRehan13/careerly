@@ -28,7 +28,7 @@ export function EmailConfirmedPage() {
         <p className="eyebrow">
           {error ? 'A small detour' : isLoading ? 'One moment' : 'Your next chapter'}
         </p>
-        <h1 className="text-3xl font-medium tracking-tight mt-4">
+        <h1 className="text-3xl font-semibold tracking-tight mt-4">
           {error
             ? 'That link needs another try.'
             : isLoading
