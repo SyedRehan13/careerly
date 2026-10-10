@@ -7,7 +7,7 @@ export function NotFoundPage() {
     <PublicMessageLayout>
         <p className="error-code" aria-hidden="true">404<span>.</span></p>
         <p className="eyebrow">Page not found</p>
-        <h1 className="text-3xl font-medium tracking-tight mt-4">Let's find your way back.</h1>
+        <h1 className="text-3xl font-semibold tracking-tight mt-4">Let's find your way back.</h1>
         <p className="text-sm muted leading-7 mt-4">
           This page doesn't exist, or it may have moved. Your next chapter is still waiting.
         </p>

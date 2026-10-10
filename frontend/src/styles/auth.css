@@ -77,13 +77,14 @@
   padding: 8px;
   color: #666;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   border-radius: 8px;
 }
 .auth-mode-switch a:hover {
   color: var(--ink);
 }
 .auth-mode-switch a[aria-current='page'] {
+  font-weight: 600;
   background: white;
   color: var(--ink);
   box-shadow: 0 1px 4px #00000012;
@@ -106,8 +107,8 @@
 .auth-form-area h1 {
   font-size: clamp(26px, 2.4vw, 32px);
   line-height: 1.2;
-  font-weight: 650;
-  letter-spacing: -0.045em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   margin: 10px 0 12px;
 }
 .auth-form-description {
@@ -323,15 +324,15 @@
 }
 .auth-story h2 {
   font-size: clamp(43px, 4.5vw, 64px);
-  letter-spacing: -0.05em;
-  font-weight: 550;
+  letter-spacing: -0.03em;
+  font-weight: 600;
   line-height: 1.1;
   margin-top: 18px;
   text-wrap: initial;
 }
 .auth-story h2 em {
-  font-family: Georgia, serif;
-  font-weight: 400;
+  font-style: normal;
+  font-weight: inherit;
   color: #dedede;
 }
 .auth-story-copy > p:last-child {
@@ -378,7 +379,7 @@
 }
 .auth-preview-heading h3 {
   font-size: 15px;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: -0.025em;
   margin-top: 4px;
   text-wrap: initial;
@@ -477,7 +478,7 @@
 .auth-story-bottom > span:last-child {
   font-size: 8px;
   font-weight: 600;
-  letter-spacing: 0.13em;
+  letter-spacing: 0.08em;
 }
 
 @media (max-width: 1100px) {

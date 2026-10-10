@@ -20,7 +20,7 @@ export class PageErrorBoundary extends Component<{ children: ReactNode }, { fail
             <RefreshCw size={24} />
           </span>
           <p className="eyebrow">A little interruption</p>
-          <h1 className="text-3xl font-medium tracking-tight mt-4">Let's give that another try.</h1>
+          <h1 className="text-3xl font-semibold tracking-tight mt-4">Let's give that another try.</h1>
           <p className="text-sm muted leading-7 mt-4">
             This page couldn't load properly. Refresh to reopen your workspace. Anything you've
             already saved will still be there.
