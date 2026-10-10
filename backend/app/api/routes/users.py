@@ -5,7 +5,9 @@ from app.api.dependencies.auth import get_current_user
 from app.core.database import get_database_session
 from app.schemas.auth import CurrentUser
 from app.schemas.profile import ProfileResponse, ProfileUpdate
+from app.schemas.resume import ResumeResponse, ResumeUpdate
 from app.services.profiles import read_profile, update_profile
+from app.services.resumes import read_resume, save_resume
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
 
@@ -34,3 +36,20 @@ async def update_my_profile(
 ) -> ProfileResponse:
     profile = await update_profile(session, current_user, changes)
     return ProfileResponse.model_validate(profile)
+
+
+@router.get("/me/resume", response_model=ResumeResponse)
+async def read_my_resume(
+    current_user: CurrentUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_database_session),
+) -> ResumeResponse:
+    return await read_resume(session, current_user.id)
+
+
+@router.put("/me/resume", response_model=ResumeResponse)
+async def update_my_resume(
+    changes: ResumeUpdate,
+    current_user: CurrentUser = Depends(get_current_user),
+    session: AsyncSession = Depends(get_database_session),
+) -> ResumeResponse:
+    return await save_resume(session, current_user.id, changes.content)
